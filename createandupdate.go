@@ -62,6 +62,7 @@ func register(url string, appID string, appKey string) (userID string, token str
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	res.Body.Close()
 	logger.Printf("Registered (response=%s)", string(body))
 	return response.UserID, response.AccessToken
 }
@@ -102,6 +103,7 @@ func userLogin(url string, appID string, appKey string, userName string, passwor
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	res.Body.Close()
 	logger.Printf("Logged-in as admin (token=%s)", response.AccessToken)
 	return response.AccessToken
 }
@@ -143,6 +145,7 @@ func adminLogin(url string, appID string, appKey string, clientID string, client
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	res.Body.Close()
 	logger.Printf("Logged-in as admin (token=%s)", response.AccessToken)
 	return response.AccessToken
 
@@ -189,6 +192,7 @@ func updateObject(url string, token string, appID string, appKey string, objectI
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	res.Body.Close()
 	logger.Printf("Updated object (response=%s)", string(body))
 }
 
@@ -233,6 +237,7 @@ func createObject(url string, token string, appID string, appKey string) string 
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	res.Body.Close()
 	logger.Printf("Created object (id=%s)", response.ObjectID)
 	return response.ObjectID
 }
