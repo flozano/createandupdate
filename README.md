@@ -2,8 +2,8 @@
 
 Stupid, non-idiomatic, low-quality stuff.
 
-Tool to register a user then create and update a object repeatedly infinitely
-for an App in Kii Cloud.
+Tool to register a user then create and update objects one by one repeatedly
+and infinitely for an App in Kii Cloud.
 
 ## Usage
 
@@ -20,3 +20,6 @@ Where `{URL}` should be replaced by endpoint of Kii Cloud, like
 `https://api.kii.com` without last slash (`/`).
 
 `{APP_ID}` and `{APP_KEY}` should be replaced by information of your app.
+
+Don't forget to stop after the test, otherwise this tool will create too many
+records on Kii Cloud.
