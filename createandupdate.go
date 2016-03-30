@@ -1,13 +1,14 @@
 package main
 
 import (
-	"os"
-	"log"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"math/rand"
+	"net/http"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -34,12 +35,12 @@ func register(url string, appID string, appKey string) (userID string, token str
 		AccessToken string `json:"_accessToken"`
 	}
 
-	requestBody := regAndAuthRequest{UserName: randomString(10), Password: randomString(10), }
+	requestBody := regAndAuthRequest{UserName: randomString(10), Password: randomString(10)}
 	jsonRequest, _ := json.Marshal(requestBody)
 
 	logger.Printf("Registration request is %s", string(jsonRequest))
 
-	req, err := http.NewRequest("POST", url + "/apps/"+appID+"/users", bytes.NewReader(jsonRequest))
+	req, err := http.NewRequest("POST", url+"/apps/"+appID+"/users", bytes.NewReader(jsonRequest))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -54,7 +55,7 @@ func register(url string, appID string, appKey string) (userID string, token str
 		logger.Fatal(err.Error())
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	if (res.StatusCode != 201) {
+	if res.StatusCode != 201 {
 		logger.Fatal("Registration failed ", res.Status, string(body))
 	}
 	var response regAndAuthResponse
@@ -76,12 +77,12 @@ func userLogin(url string, appID string, appKey string, userName string, passwor
 		AccessToken string `json:"access_token"`
 	}
 
-	requestBody := oauthRequest{UserName: userName, Password: password, }
+	requestBody := oauthRequest{UserName: userName, Password: password}
 	jsonRequest, _ := json.Marshal(requestBody)
 
 	logger.Printf("Log-in request is %s", string(jsonRequest))
 
-	req, err := http.NewRequest("POST", url + "/oauth2/token", bytes.NewReader(jsonRequest))
+	req, err := http.NewRequest("POST", url+"/oauth2/token", bytes.NewReader(jsonRequest))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -95,7 +96,7 @@ func userLogin(url string, appID string, appKey string, userName string, passwor
 		logger.Fatal(err.Error())
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	if (res.StatusCode != 200) {
+	if res.StatusCode != 200 {
 		logger.Fatal("Log-in failed ", res.Status, string(body))
 	}
 	var response oauthResponse
@@ -118,12 +119,12 @@ func adminLogin(url string, appID string, appKey string, clientID string, client
 		AccessToken string `json:"access_token"`
 	}
 
-	requestBody := oauthRequest{ClientID: clientID, ClientSecret: clientSecret, }
+	requestBody := oauthRequest{ClientID: clientID, ClientSecret: clientSecret}
 	jsonRequest, _ := json.Marshal(requestBody)
 
 	logger.Printf("Log-in request is %s", string(jsonRequest))
 
-	req, err := http.NewRequest("POST", url + "/oauth2/token", bytes.NewReader(jsonRequest))
+	req, err := http.NewRequest("POST", url+"/oauth2/token", bytes.NewReader(jsonRequest))
 	if err != nil {
 		panic(err.Error())
 	}
@@ -137,7 +138,7 @@ func adminLogin(url string, appID string, appKey string, clientID string, client
 		logger.Fatal(err.Error())
 	}
 	body, err := ioutil.ReadAll(res.Body)
-	if (res.StatusCode != 200) {
+	if res.StatusCode != 200 {
 		logger.Fatal("Log-in failed ", res.Status, string(body))
 	}
 	var response oauthResponse
@@ -159,28 +160,28 @@ func updateObject(url string, token string, appID string, appKey string, objectI
 	}
 
 	type objectUpdateResponse struct {
-		ModifiedAt  int64 `json:"modifiedAt"`
-		CreatedAt   int64 `json:"createdAt"`
+		ModifiedAt  int64  `json:"modifiedAt"`
+		CreatedAt   int64  `json:"createdAt"`
 		EntityTagID string `json:"entityTagID"`
 	}
 
 	client := &http.Client{}
 	jsonRequest, _ := json.Marshal(objectUpdateRequest{
-		FirstName: randomString(20),
+		FirstName:      randomString(20),
 		SomeOtherStuff: randomString(45),
 	})
-	req, err := http.NewRequest("PATCH", url + "/apps/" + appID + "/users/me/buckets/testing_kii/objects/" + objectID, bytes.NewReader(jsonRequest))
+	req, err := http.NewRequest("PATCH", url+"/apps/"+appID+"/users/me/buckets/testing_kii/objects/"+objectID, bytes.NewReader(jsonRequest))
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 	req.Header.Add("content-type", "application/json")
-	req.Header.Add("authorization", "bearer " + token)
+	req.Header.Add("authorization", "bearer "+token)
 
 	res, err := client.Do(req)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	if (res.StatusCode != 200) {
+	if res.StatusCode != 200 {
 		logger.Fatal("Update object failed ", res.Status)
 	}
 	body, err := ioutil.ReadAll(res.Body)
@@ -206,29 +207,29 @@ func createObject(url string, token string, appID string, appKey string) string 
 
 	type objectCreationResponse struct {
 		ObjectID    string `json:"objectID"`
-		CreatedAt   int64 `json:"createdAt"`
+		CreatedAt   int64  `json:"createdAt"`
 		EntityTagID string `json:"entityTagID"`
 		DataType    string `json:"dataType"`
 	}
 	client := &http.Client{}
 	jsonRequest, _ := json.Marshal(objectCreationRequest{
-		FirstName: randomString(20),
-		LastName: randomString(30),
+		FirstName:    randomString(20),
+		LastName:     randomString(30),
 		EmailAddress: randomString(25),
 	})
 
-	req, err := http.NewRequest("POST", url + "/apps/" + appID + "/users/me/buckets/testing_kii/objects", bytes.NewReader(jsonRequest))
+	req, err := http.NewRequest("POST", url+"/apps/"+appID+"/users/me/buckets/testing_kii/objects", bytes.NewReader(jsonRequest))
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 	req.Header.Add("content-type", "application/json")
-	req.Header.Add("authorization", "bearer " + token)
+	req.Header.Add("authorization", "bearer "+token)
 
 	res, err := client.Do(req)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	if (res.StatusCode != 201) {
+	if res.StatusCode != 201 {
 		logger.Fatal("Create object failed ", res.Status)
 	}
 	body, err := ioutil.ReadAll(res.Body)
@@ -242,22 +243,75 @@ func createObject(url string, token string, appID string, appKey string) string 
 	return response.ObjectID
 }
 
+func deleteBucket(url string, token string, appID string, appKey string) {
+
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", url+"/apps/"+appID+"/users/me/buckets/testing_kii", nil)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("authorization", "bearer "+token)
+
+	res, err := client.Do(req)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	if res.StatusCode != 204 {
+		logger.Fatal("Delete bucket failed ", res.Status)
+	}
+}
+
+func getObject(url string, token string, appID string, appKey string, objectID string) {
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url+"/apps/"+appID+"/users/me/buckets/testing_kii/objects/"+objectID, nil)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("authorization", "bearer "+token)
+
+	res, err := client.Do(req)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	if res.StatusCode != 200 {
+		logger.Fatal("Get object failed ", res.Status)
+	}
+}
+
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	logger = log.New(os.Stdout, "createandupdate - ", log.LstdFlags | log.Lmicroseconds)
+	logger = log.New(os.Stdout, "createandupdate - ", log.LstdFlags|log.Lmicroseconds)
 	client = &http.Client{}
 }
 
 func main() {
-	if len(os.Args) != 4 {
+	if len(os.Args) < 4 {
 		log.Fatal("Incorrect usage. Usage: url appID appKey")
 	}
 	url := os.Args[1]
 	appID := os.Args[2]
 	appKey := os.Args[3]
-	logger.Printf("Settings: url=%s, appID=%s, appKey=%s", url, appID, appKey)
+	repeatNum := 10
+	var err error
+	if len(os.Args) == 5 {
+		repeatNum, err = strconv.Atoi(os.Args[4])
+		if err != nil {
+			logger.Fatal(err.Error())
+		}
+	}
+	logger.Printf("Settings: url=%s, appID=%s, appKey=%s, repeatNum=%d", url, appID, appKey, repeatNum)
 	_, token := register(url, appID, appKey)
 	for {
-		updateObject(url, token, appID, appKey, createObject(url, token, appID, appKey))
+		logger.Printf("Create object")
+		objectID := createObject(url, token, appID, appKey)
+		for i := 0; i < (repeatNum - 1); i++ {
+			logger.Printf("Update object: stage %d", i+1)
+			updateObject(url, token, appID, appKey, objectID)
+		}
+		logger.Printf("Delete bucket after object creation/update %d times", repeatNum)
+		deleteBucket(url, token, appID, appKey)
 	}
 }
